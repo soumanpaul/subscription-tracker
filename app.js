@@ -2,6 +2,7 @@ import express from 'express';
 import { PORT } from './config/env.js';
 import userRoutes from './routes/user.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import subscriptionRouter from './routes/subscription.routes.js'
 import connectToDatabase from './database/mongodb.js';
 import errorMiddleware from './middleware/error.middleware.js';
 import cookieParser from 'cookie-parser';
@@ -10,7 +11,7 @@ const app = express();
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false}))
-app.use(cookieParser)
+app.use(cookieParser())
 
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);

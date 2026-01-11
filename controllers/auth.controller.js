@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken';
-import { JWT_EXPIRES_IN } from '../config/env';
+import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/env.js';
+import UserModel from '../models/user.model.js';
 
 // what is a req body ? req.body is an object containing data from the client
 export const signUp = async (req, res, next) => {
@@ -12,7 +13,7 @@ export const signUp = async (req, res, next) => {
         // Logic to create a new user
         const {name, email, password } = req.body;
         // check if a user already exists
-        const existingUser = await User.findOne({email})
+        const existingUser = await UserModel.findOne({email})
 
         if(existingUser) {
             const error = new Error("User already exists")
@@ -23,7 +24,7 @@ export const signUp = async (req, res, next) => {
         // hash password
         const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(password, salt)
-        const newUsers = await user.create([{ name, email, password: hashPassword}], { session })
+        const newUsers = await UserModel.create([{ name, email, password: hashPassword}], { session })
         const token = jwt.sign({ userId: newUsers[0]._id}, JWT_SECRET, {expiresIn: JWT_EXPIRES_IN })
         
         await session.commitTransaction();
@@ -38,6 +39,9 @@ export const signUp = async (req, res, next) => {
             }
         })
     } catch(error) {
+        await session.abortTransaction()
+        session.endSession()
+        next(error)
     }
 }
 
