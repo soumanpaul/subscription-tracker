@@ -1,5 +1,4 @@
 import UserModel from "../models/user.model.js";
-
 export const getUsers = async (req, res, next) => {
     try{
         const users = await UserModel.find();
@@ -9,8 +8,6 @@ export const getUsers = async (req, res, next) => {
         next(error)
     }
 }
-
-
 export const getUser = async (req, res, next) => {
     try{
         const user = await UserModel.findById(req.params.id).select('-password');
