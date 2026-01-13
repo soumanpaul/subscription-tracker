@@ -1,30 +1,29 @@
+import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/env.js";
 import UserModel from "../models/user.model.js";
 
 const authorize = async (req, res, next) => {
-    console.log("auth header:", req.headers.authorization);
-console.log("cookies:", req.cookies);
-    try{
-        let token;
+  try {
+    let token;
 
-        if(req.headers.authorization && req.headers.authorization.startWith("Bearer")) {
-            token = req.headers.authorization.split(' ')[1]
-        }
+    const authHeader = req.headers.authorization; 
 
-        if(!token) return res.status(401).json({ message: 'Unauthorized'})
-        
-        const decoded = jwt.verify(token, JWT_SECRET);
-
-        const user = await UserModel.findById(decoded.userId);
-        if(!user) return res.status(401).json({ message: "Unauthorized"})
-        
-        req.user = user;
-
-        next()
-    } catch(error) {
-        // next(error)
-        res.status(401).json({ message: "unauthorized", error: error.message})
+    if (authHeader && authHeader.startsWith("Bearer ")) { 
+      token = authHeader.split(" ")[1];
     }
-}
+
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await UserModel.findById(decoded.userId);
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized", error: error.message });
+  }
+};
 
 export default authorize;
