@@ -11,7 +11,7 @@ const errorMiddleware = (err, req, res, next) => {
             error.statusCode = 404;
         }
 
-        // Mongoode duplicate key
+        // Mongoode duplicate key, Mongoose validation error , Mongoose bad ObjectId
         if(err.code == 11000) {
             const message = "Duplicate field value entered"
             error = new Error(message);

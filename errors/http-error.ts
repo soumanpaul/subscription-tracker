@@ -1,11 +1,11 @@
 export class HttpError extends Error {
   statusCode: number;
+  details?: unknown;
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, details?: unknown) {
     super(message);
     this.statusCode = statusCode;
-
-    // Required for extending built-in classes
+    this.details = details;
     Object.setPrototypeOf(this, HttpError.prototype);
   }
 }
