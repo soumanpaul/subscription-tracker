@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
 import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/env.js';
 import UserModel from '../models/user.model.js';
-
-// what is a req body ? req.body is an object containing data from the client
-export const signUp = async (req, res, next) => {
+import {HttpError} from '../errors/http-error'
+export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     const session = await mongoose.startSession(); // mongoose transaction for Atomic Operations
     session.startTransaction(); 
 
@@ -16,7 +16,7 @@ export const signUp = async (req, res, next) => {
         const existingUser = await UserModel.findOne({email})
 
         if(existingUser) {
-            const error = new Error("User already exists")
+            const error = new HttpError("User already exists", 403)
             error.statusCode = 409;
             throw error;
         }
@@ -45,7 +45,7 @@ export const signUp = async (req, res, next) => {
     }
 }
 
-export const signIn = async (req, res, next) => {
+export const signIn = async (req: Request, res: Response, next: NextFunction) => {
     // implement signup logic
     try{
         const { email, password} = req.body;
@@ -53,14 +53,14 @@ export const signIn = async (req, res, next) => {
         const user = await UserModel.findOne({email})
 
         if(!user) {
-            const error = new Error("User not found")
+            const error =  new HttpError("User not found", 404);
             error.statusCode = 404;
             throw error;
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if(!isPasswordValid) {
-            const error = new Error("Invalid password")
+            const error = new HttpError("Invalid password", 401)
             error.statusCode = 401;
             throw error;
         }
@@ -80,9 +80,8 @@ export const signIn = async (req, res, next) => {
 
 }
 
-export const signOut = async (req, res, next) => {
-    // implement signup logic
-
+export const signOut = async (req: Request, res: Response, next: NextFunction) => {
+    // implement signup logi
 
 }
 
