@@ -25,7 +25,7 @@ export function toHttpError(err: unknown): HttpError {
   if (isMongooseValidationError(err)) {
     const details = Object.values(err.errors).map((e) => ({
       path: (e as any).path,
-      message: e.message,
+      message: (e as any).message,
       kind: (e as any).kind,
     }));
 

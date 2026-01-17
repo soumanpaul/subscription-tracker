@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from "express";
 import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/env.js';
 import UserModel from '../models/user.model.js';
 import {HttpError} from '../errors/http-error'
+
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     const session = await mongoose.startSession(); // mongoose transaction for Atomic Operations
     session.startTransaction(); 

@@ -1,17 +1,14 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-
     "rootDir": "src",
     "outDir": "dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
- 
     "resolveJsonModule": true,
     // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
-
+    "allowJs": false,          // <-- allow .js files
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
@@ -47,6 +44,10 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+  },
+  "ts-node": {
+    "esm": true,
+    "transpileOnly": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
