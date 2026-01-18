@@ -10,7 +10,7 @@ import { createRateLimiter } from './middleware/middleware.ts';
 import { InMemoryFixedWindowStore } from './rate-limiter/memory-store.ts';
 import { IpKeyStrategy } from './rate-limiter/key-strategies.ts';
 
-// import authRoutes from './routes/auth.routes.js';
+import authRoutes from './routes/auth.routes.js';
 // import userRoutes from './routes/user.routes.js'
 // import subscriptionRouter from './routes/subscription.routes.js'
 // import errorMiddleware from './middleware/error.middleware.js';
