@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts,js --exec \"node --loader ts-node/esm\" index.ts",
+    "dev": "nodemon --watch . --ext ts,js,json --ignore node_modules --exec \"node --loader ts-node/esm index.ts\"",
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit -w"

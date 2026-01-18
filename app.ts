@@ -12,7 +12,7 @@ import { IpKeyStrategy } from './rate-limiter/key-strategies.ts';
 
 import authRoutes from './routes/auth.routes.js';
 // import userRoutes from './routes/user.routes.js'
-// import subscriptionRouter from './routes/subscription.routes.js'
+import subscriptionRouter from './routes/subscription.routes.js'
 // import errorMiddleware from './middleware/error.middleware.js';
 // import authorize from './middleware/auth.middleware.js';
 
@@ -86,8 +86,8 @@ app.use(limiter);
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // app.use('/api/users', authorize, userRoutes);
-// app.use('/api/auth', authRoutes);
-// app.use('/api/v1/subscription', subscriptionRouter);
+app.use('/api/auth', authRoutes);
+app.use('/api/v1/subscription', subscriptionRouter);
 // app.use(errorMiddleware);
 
 app.get('/', (req, res) => {

@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from "express";
-import { env } from '../config/env.js';
+import { env } from '../config/env.ts';
 import UserModel from '../models/user.model.js';
 import { HttpError } from '../errors/http-error.js'
 

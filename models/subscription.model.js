@@ -36,22 +36,22 @@ const subscriptionSchema = new mongoose.Schema({
     startDate: {
         type: Date,
         required: true,
-        validate: {
-            validate:function(value) {
-                return value < this.startDate;
-            },
-            message: "start date must be "
-        }
+        // validate: {
+        //     validate:function(value) {
+        //         return value < this.startDate;
+        //     },
+        //     message: "start date must be "
+        // }
     },
     renewalDate: {
         type: Date,
         // required: true,
-        validate: {
-            validator: function (value) {
-                return value > this.startDate;
-            },
-            message: "Renewal date must be after this start date"
-        }
+        // validate: {
+        //     validator: function (value) {
+        //         return value > this.startDate;
+        //     },
+        //     message: "Renewal date must be after this start date"
+        // }
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -62,7 +62,7 @@ const subscriptionSchema = new mongoose.Schema({
 }, { timeseries: true})
 
 // Auto-calculate renewal date if missing.
-subscriptionSchema.pre('save', function(next){
+subscriptionSchema.pre('save', async function(){
     if(!this.renewalDate) {
         const renewalPeriods = {
             daily: 1,
@@ -79,8 +79,6 @@ subscriptionSchema.pre('save', function(next){
     if(this.renewalDate < new Date()) {
         this.status = 'expired'
     }
-
-    next();
 })
 
 //  Model from schema
