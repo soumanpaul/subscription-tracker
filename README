@@ -1,2 +1,32 @@
 - npm i helmet cors compression cookie-parser morgan express-rate-limit
 - npm i -D @types/cookie-parser @types/compression @types/morgan
+
+
+- The client starts a workflow.
+The Workflow API defines the steps and logic.
+QStash orchestrates execution by triggering each step and passing results between them.
+Each step runs independently and reports its result back before the next step starts
+
+
+Step-by-step flow
+1. Client → Workflow API
+The Client sends initial data to the Workflow API.
+This could be an HTTP request like “start this workflow with these inputs”.
+
+2. Workflow API → QStash
+The Workflow API forwards the same initial data to QStash.
+QStash is responsible for starting and coordinating the workflow execution.
+Think of QStash as the traffic controller.
+
+3. QStash starts the workflow
+QStash triggers Step 1 by calling the Workflow API.
+It passes the initial data to Step 1.
+
+4. Step 1 executes
+Step 1 runs its logic (e.g., calling a service, processing data).
+When it finishes successfully:
+It returns step 1 results back to QStash.
+The step is marked SUCCESS.
+
+
+Node LTS + Express + TypeScript + Zod + Prisma (Postgres) + Redis + BullMQ + Pino + OpenTelemetry + Jest/Vitest + Docker + OpenAPI + Sentry
