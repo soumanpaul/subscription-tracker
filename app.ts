@@ -4,6 +4,8 @@ import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import {Queue} from 'bullmq';
+import IORedis from 'ioredis';
 
 import { env } from './config/env.ts';
 import { createRateLimiter } from './middleware/middleware.ts';
@@ -17,6 +19,9 @@ import subscriptionRouter from './routes/subscription.routes.js'
 // import authorize from './middleware/auth.middleware.js';
 
 export const app = express();
+
+const redisConnection = new IORedis();
+const stepQueue = new Queue("workflow-steps", { connection: redisConnection });
 
 const limiter = createRateLimiter({
     windowMs: 60_000,
@@ -97,6 +102,12 @@ app.get('/', (req, res) => {
 //     console.log(`Subscription Tracker API is running on http://localhost:${env.PORT}`);
 // })
 
+app.post("/start", async (req, res) => {
+  const initialData = req.body;
+  // push step1 job with initial data
+  const job = await stepQueue.add("step1", { initialData }, { removeOnComplete: true });
+  res.json({ jobId: job.id})
+});
 
 /**
  * 9) 404 handler (after routes)

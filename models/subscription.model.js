@@ -1,7 +1,18 @@
-import mongoose from "mongoose";
+import {Schema, model, Types } from "mongoose";
+
+const ReminderSchema = new Schema(
+    {
+        offsetDays: { type: Number, required: true},
+        scheduledFor: { type: Date, required: true},
+        jobId: { type: String, required: true},
+        sentAt: { type: Date },
+        status: { type: String, enum: ["SCHEDULED", 'SENT', "CANCELLED"], default: "SCHEDULED" }
+    },
+    { _id: false}
+);
 
 // schema
-const subscriptionSchema = new mongoose.Schema({
+const subscriptionSchema = new Schema({
     name: {
         type: String,
         required: [true, "Name is required"],
@@ -58,7 +69,9 @@ const subscriptionSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
         index: true
-    }
+    },
+    remainderOffsets: { type: Date,  default: [30, 7, 1]},
+    remainders: { type: [ReminderSchema], default: []}
 }, { timeseries: true})
 
 // Auto-calculate renewal date if missing.
@@ -82,6 +95,4 @@ subscriptionSchema.pre('save', async function(){
 })
 
 //  Model from schema
-const Subscription = mongoose.model("Subscription", subscriptionSchema);
-
-export default Subscription;
+export default model("Subscription", subscriptionSchema);
