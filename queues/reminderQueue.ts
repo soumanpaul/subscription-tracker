@@ -1,3 +1,5 @@
+// BullMQ setup (queue + connection)
+
 import { Queue } from "bullmq"
 import IORedis from 'ioredis'
 

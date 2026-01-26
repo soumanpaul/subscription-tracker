@@ -3,13 +3,17 @@ import {Schema, model, Types } from "mongoose";
 const ReminderSchema = new Schema(
     {
         offsetDays: { type: Number, required: true},
-        scheduledFor: { type: Date, required: true},
-        jobId: { type: String, required: true},
+        scheduledFor: { type: Date, required: true},        // exact send time
+        jobId: { type: String, required: true},             // bullmq jobId for dedupe/removal
         sentAt: { type: Date },
         status: { type: String, enum: ["SCHEDULED", 'SENT', "CANCELLED"], default: "SCHEDULED" }
     },
     { _id: false}
 );
+
+// You can dedupe jobs using jobId
+// You can cancel/reschedule jobs on subscription updates
+// You can track what was sent (no double emails)
 
 // schema
 const subscriptionSchema = new Schema({

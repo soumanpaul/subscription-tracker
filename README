@@ -186,3 +186,4 @@ Your workflows are simple/short, infra must be minimal, and you prefer to contro
 scaffold a complete Express + TypeScript repo for Temporal (including Docker Compose to run Temporal server + worker + sample workflow), or
 scaffold Express + BullMQ with a dashboard, DB persistence for workflow state, and a sample end-to-end flow.
 Tell me which scaffold you want and I’ll generate it (folder structure, package.json, and full files).
+
