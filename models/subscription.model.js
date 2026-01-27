@@ -1,102 +1,95 @@
-import {Schema, model, Types } from "mongoose";
+import mongoose, { Schema, model, Types } from "mongoose";
 
 const ReminderSchema = new Schema(
-    {
-        offsetDays: { type: Number, required: true},
-        scheduledFor: { type: Date, required: true},        // exact send time
-        jobId: { type: String, required: true},             // bullmq jobId for dedupe/removal
-        sentAt: { type: Date },
-        status: { type: String, enum: ["SCHEDULED", 'SENT', "CANCELLED"], default: "SCHEDULED" }
-    },
-    { _id: false}
+  {
+    offsetDays: { type: Number, required: true }, // 30, 7, 1
+    scheduledFor: { type: Date, required: true },
+    jobId: { type: String, required: true, index: true },
+    sentAt: { type: Date },
+    status: {
+      type: String,
+      enum: ["SCHEDULED", "SENT", "CANCELLED"],
+      default: "SCHEDULED"
+    }
+  },
+  { _id: false }
 );
 
-// You can dedupe jobs using jobId
-// You can cancel/reschedule jobs on subscription updates
-// You can track what was sent (no double emails)
+const subscriptionSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, minlength: 2 },
+    price: { type: Number, required: true, min: 0 },
+    currency: { type: String, enum: ["USD", "EUR", "GBP"], default: "USD" },
 
-// schema
-const subscriptionSchema = new Schema({
-    name: {
-        type: String,
-        required: [true, "Name is required"],
-        trim: true,
-        minLength: 2,
-        maxLength: 100
-    },
-    price: {
-        type: Number,
-        required: [true, "Subscription price is required"],
-        min: [0, "Price must be greater than 0"]
-    },
-    currency: {
-        type: String,
-        enum: ['USD', 'EUR', 'GBP'],
-        default: 'USD'
-    },
     frequency: {
-        type: String,
-        enum: ['daily', 'weekly', 'monthly', 'yearly'],
+      type: String,
+      enum: ["daily", "weekly", "monthly", "yearly"],
+      required: true
     },
-    catagory: {
-        type: String,
-        enum: ['sports', 'news', 'entertainment', 'lifestyle', 'technology', 'finance', 'politics', 'other'],
-        required: true
+
+    category: {
+      type: String,
+      enum: ["sports", "news", "entertainment", "lifestyle", "technology", "finance", "politics", "other"],
+      required: true
     },
+
     status: {
-        type: String,
-        enum: ['active', 'cancelled', 'expired'],
-        default: 'active'
+      type: String,
+      enum: ["active", "cancelled", "expired"],
+      default: "active",
+      index: true
     },
-    startDate: {
-        type: Date,
-        required: true,
-        // validate: {
-        //     validate:function(value) {
-        //         return value < this.startDate;
-        //     },
-        //     message: "start date must be "
-        // }
-    },
-    renewalDate: {
-        type: Date,
-        // required: true,
-        // validate: {
-        //     validator: function (value) {
-        //         return value > this.startDate;
-        //     },
-        //     message: "Renewal date must be after this start date"
-        // }
-    },
+
+    startDate: { type: Date, required: true },
+    renewalDate: { type: Date, required: true, index: true },
+
     user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-        index: true
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true
     },
-    remainderOffsets: { type: Date,  default: [30, 7, 1]},
-    remainders: { type: [ReminderSchema], default: []}
-}, { timeseries: true})
 
-// Auto-calculate renewal date if missing.
-subscriptionSchema.pre('save', async function(){
-    if(!this.renewalDate) {
-        const renewalPeriods = {
-            daily: 1,
-            weekly: 7,
-            monthly: 30,
-            yearly: 365,
-        }
+    // 🔑 predefined reminders (in days)
+    reminderOffsets: {
+      type: [Number],
+      default: [30, 7, 1]
+    },
 
-        this.renewalDate = new Date(this.startDate);
-        this.renewalDate.setDate(this.renewalDate.getDate() + renewalPeriods[this.frequency])
+    // 🔑 persisted workflow state
+    reminders: {
+      type: [ReminderSchema],
+      default: []
     }
+  },
+  { timestamps: true }
+);
 
-    // auto-update the status if renewal date has passed
-    if(this.renewalDate < new Date()) {
-        this.status = 'expired'
-    }
-})
+// Auto-calculate renewal date safely
+subscriptionSchema.pre("validate", function (next) {
+  if (!this.renewalDate) {
+    const daysMap = {
+      daily: 1,
+      weekly: 7,
+      monthly: 30,
+      yearly: 365
+    };
 
+    const days = daysMap[this.frequency];
+    this.renewalDate = new Date(this.startDate);
+    this.renewalDate.setUTCDate(this.renewalDate.getUTCDate() + days);
+  }
+
+  next();
+});
+
+
+// Auto-expire subscriptions
+subscriptionSchema.pre("save", function (next) {
+  if (this.renewalDate < new Date()) {
+    this.status = "expired";
+  }
+  next();
+});
 //  Model from schema
 export default model("Subscription", subscriptionSchema);
