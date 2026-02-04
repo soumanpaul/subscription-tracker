@@ -1,45 +1,38 @@
-import mongoose, { Schema, model, Types, HydratedDocument, Model, CallbackWithoutResultAndOptionalError } from "mongoose";
+import mongoose from "mongoose";
 
-/** --- Enums (as union types) --- */
-export type Currency = "USD" | "EUR" | "GBP";
 export type Frequency = "daily" | "weekly" | "monthly" | "yearly";
-export type Category =
-  | "sports"
-  | "news"
-  | "entertainment"
-  | "lifestyle"
-  | "technology"
-  | "finance"
-  | "politics"
-  | "other";
-
 export type SubscriptionStatus = "active" | "cancelled" | "expired";
-export type ReminderStatus = "SCHEDULED" | "SENT" | "CANCELLED";
 
-/** --- Subdocument types --- */
 export interface IReminder {
-  offsetDays: number; // 30, 7, 1
+  offsetDays: number;
   scheduledFor: Date;
   jobId: string;
   sentAt?: Date;
-  status: ReminderStatus;
+  status: "SCHEDULED" | "SENT" | "CANCELLED";
 }
 
-/** --- Main document type --- */
 export interface ISubscription {
   name: string;
   price: number;
-  currency: Currency;
+  currency: "USD" | "EUR" | "GBP";
 
   frequency: Frequency;
-  category: Category;
+  category:
+    | "sports"
+    | "news"
+    | "entertainment"
+    | "lifestyle"
+    | "technology"
+    | "finance"
+    | "politics"
+    | "other";
 
   status: SubscriptionStatus;
 
   startDate: Date;
-  renewalDate: Date;
+  renewalDate?: Date; // ✅ optional in TS (you compute it)
 
-  user: Types.ObjectId;
+  user: mongoose.Types.ObjectId;
 
   reminderOffsets: number[];
   reminders: IReminder[];
@@ -48,8 +41,7 @@ export interface ISubscription {
   updatedAt: Date;
 }
 
-/** --- Reminder sub-schema --- */
-const ReminderSchema = new Schema<IReminder>(
+const ReminderSchema = new mongoose.Schema<IReminder>(
   {
     offsetDays: { type: Number, required: true },
     scheduledFor: { type: Date, required: true },
@@ -64,90 +56,57 @@ const ReminderSchema = new Schema<IReminder>(
   { _id: false }
 );
 
-/** --- Subscription schema --- */
-const subscriptionSchema = new Schema<ISubscription>(
+const subscriptionSchema = new mongoose.Schema<ISubscription>(
   {
     name: { type: String, required: true, trim: true, minlength: 2 },
     price: { type: Number, required: true, min: 0 },
     currency: { type: String, enum: ["USD", "EUR", "GBP"], default: "USD" },
 
-    frequency: {
-      type: String,
-      enum: ["daily", "weekly", "monthly", "yearly"],
-      required: true,
-    },
+    frequency: { type: String, enum: ["daily", "weekly", "monthly", "yearly"], required: true },
 
     category: {
       type: String,
-      enum: [
-        "sports",
-        "news",
-        "entertainment",
-        "lifestyle",
-        "technology",
-        "finance",
-        "politics",
-        "other",
-      ],
+      enum: ["sports", "news", "entertainment", "lifestyle", "technology", "finance", "politics", "other"],
       required: true,
     },
 
-    status: {
-      type: String,
-      enum: ["active", "cancelled", "expired"],
-      default: "active",
-      index: true,
-    },
+    status: { type: String, enum: ["active", "cancelled", "expired"], default: "active", index: true },
 
     startDate: { type: Date, required: true },
     renewalDate: { type: Date, required: true, index: true },
 
-    user: { type: Types.ObjectId, ref: "User", required: true, index: true },
+    user: { type: mongoose.Types.ObjectId, ref: "User", required: true, index: true },
 
     reminderOffsets: { type: [Number], default: [30, 7, 1] },
-
     reminders: { type: [ReminderSchema], default: [] },
   },
   { timestamps: true }
 );
 
-/** --- Hooks --- */
+// ✅ No next() overload resolution needed
+subscriptionSchema.pre("validate", function () {
+  if (!this.renewalDate) {
+    const daysMap: Record<Frequency, number> = {
+      daily: 1,
+      weekly: 7,
+      monthly: 30,
+      yearly: 365,
+    };
 
-subscriptionSchema.pre(
-  "validate",
-  function (this: HydratedDocument<ISubscription>, next: CallbackWithoutResultAndOptionalError) {
-    if (!this.renewalDate) {
-      const daysMap: Record<Frequency, number> = {
-        daily: 1,
-        weekly: 7,
-        monthly: 30,
-        yearly: 365,
-      };
-
-      const days = daysMap[this.frequency];
-      this.renewalDate = new Date(this.startDate);
-      this.renewalDate.setUTCDate(this.renewalDate.getUTCDate() + days);
-    }
-
-    next();
+    const days = daysMap[this.frequency];
+    this.renewalDate = new Date(this.startDate);
+    this.renewalDate.setUTCDate(this.renewalDate.getUTCDate() + days);
   }
-);
+});
 
+subscriptionSchema.pre("save", function () {
+  if (this.renewalDate && this.renewalDate < new Date()) {
+    this.status = "expired";
+  }
+});
 
-// Auto-expire subscriptions
-// subscriptionSchema.pre("save", function (next: (err?: Error) => void) {
-//   const doc = this as HydratedDocument<ISubscription>;
-
-//   if (doc.renewalDate < new Date()) {
-//     doc.status = "expired";
-//   }
-
-//   next();
-// });
-
-/** --- Model --- */
-const SubscriptionModel: Model<ISubscription> =
+const SubscriptionModel =
   mongoose.models.Subscription ||
-  model<ISubscription>("Subscription", subscriptionSchema);
+  mongoose.model<ISubscription>("Subscription", subscriptionSchema);
 
 export default SubscriptionModel;
