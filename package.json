@@ -7,7 +7,10 @@
     "dev": "nodemon --watch . --ext ts,js,json --ignore node_modules --exec \"node --loader ts-node/esm index.ts\"",
     "build": "tsc",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit -w"
+    "typecheck": "tsc --noEmit -w",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage --coverage.provider=v8"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -37,13 +40,17 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.0.9",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.39.2",
     "globals": "^17.0.0",
     "jiti": "^2.6.1",
     "nodemon": "^3.1.11",
+    "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.53.0"
+    "typescript-eslint": "^8.53.0",
+    "vitest": "^3.2.4"
   }
 }
