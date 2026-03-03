@@ -36,10 +36,16 @@ describe('route modules', () => {
     const up = await request(app).post('/auth/sign-up').send({});
     const inRes = await request(app).post('/auth/sign-in').send({});
     const out = await request(app).post('/auth/sign-out').send({});
+    const up2 = await request(app).post('/auth/signup').send({});
+    const inRes2 = await request(app).post('/auth/login').send({});
+    const out2 = await request(app).post('/auth/logout').send({});
 
     expect(up.status).toBe(201);
     expect(inRes.status).toBe(200);
     expect(out.status).toBe(200);
+    expect(up2.status).toBe(201);
+    expect(inRes2.status).toBe(200);
+    expect(out2.status).toBe(200);
   });
 
   test('subscription routes wire auth-protected endpoints', async () => {

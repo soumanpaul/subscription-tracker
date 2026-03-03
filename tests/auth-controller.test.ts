@@ -103,10 +103,21 @@ describe('auth.controller', () => {
 
   test('signOut is defined and callable', async () => {
     const req: any = {};
-    const res: any = {};
+    const res: any = {
+      clearCookie: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+    };
     const next = vi.fn();
 
     await signOut(req, res, next);
+
+    expect(res.clearCookie).toHaveBeenCalledWith('token');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'User logged out successfully',
+    });
     expect(next).not.toHaveBeenCalled();
   });
 });

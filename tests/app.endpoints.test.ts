@@ -151,6 +151,45 @@ describe('Endpoint UTs', () => {
     expect(mocks.userCreate).toHaveBeenCalled();
   });
 
+  test('POST /api/auth/signup creates user and returns token', async () => {
+    const payload = {
+      name: 'Alice',
+      email: 'alice@example.com',
+      password: 'secret123',
+    };
+
+    const res = await request(app).post('/api/auth/signup').send(payload);
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.token).toBe('dummy.jwt.token');
+  });
+
+  test('POST /api/auth/login authenticates user and returns token', async () => {
+    mocks.userFindOne.mockResolvedValue({
+      _id: 'user-123',
+      name: 'Alice',
+      email: 'alice@example.com',
+      password: 'hashed-password',
+    });
+
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'alice@example.com', password: 'secret123' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.token).toBe('dummy.jwt.token');
+  });
+
+  test('POST /api/auth/logout logs out user', async () => {
+    const res = await request(app).post('/api/auth/logout').send({});
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('User logged out successfully');
+  });
+
   test('POST /api/auth/sign-up duplicate user returns error payload', async () => {
     mocks.userFindOne.mockResolvedValue({ _id: 'existing-user', email: 'alice@example.com' });
 
